@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PensionPal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-900 min-h-screen">
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center px-4">
+      <div class="w-full max-w-md">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+          <h1 class="text-3xl font-bold text-center mb-2">PensionPal</h1>
+          <p class="text-center text-slate-600 mb-8">Your personal pension contribution wallet</p>
+
+          <form id="login-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Email</label>
+              <input
+                type="email"
+                id="login-email"
+                placeholder="Enter your email"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              />
+            </div>
+            <div id="email-suggestions" class="space-y-2"></div>
+            <button
+              type="submit"
+              id="login-btn"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition"
+            >
+              Sign In
+            </button>
+          </form>
+          <p id="login-error" class="text-red-600 text-sm mt-4 hidden"></p>
+
+          <div class="text-center mt-6 pt-6 border-t border-slate-200">
+            <p class="text-sm text-slate-600 mb-2">Admin Access?</p>
+            <a href="?admin=true" class="text-blue-600 hover:text-blue-700 font-medium text-sm">Go to Admin Panel</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Screen (hidden until logged in) -->
+    <div id="dashboard-screen" class="hidden min-h-screen">
+      <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <h1 class="text-2xl font-bold">PensionPal</h1>
+          <button
+            id="logout-btn"
+            class="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium transition"
+          >
+            Sign Out
+          </button>
+        </div>
+      </header>
+
+      <main class="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        <!-- Greeting & Wallet Card -->
+        <section class="space-y-4">
+          <div>
+            <h2 class="text-xl text-slate-600">Welcome back,</h2>
+            <h3 class="text-4xl font-bold" id="user-greeting">—</h3>
+          </div>
+
+          <!-- Wallet Balance -->
+          <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-8 text-white shadow-lg">
+            <p class="text-sm font-medium opacity-90">Total Savings</p>
+            <p class="text-5xl font-bold mt-2">₦<span id="wallet-balance">0</span></p>
+            <p class="text-sm opacity-75 mt-4" id="wallet-status">Ready to contribute</p>
+          </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- One-time Payment -->
+          <div class="bg-white rounded-lg p-6 border border-slate-200">
+            <h3 class="text-lg font-semibold mb-4">Add Funds Once</h3>
+            <p class="text-slate-600 text-sm mb-4">Make a one-time contribution to your pension savings.</p>
+            <div class="space-y-3">
+              <input
+                type="number"
+                id="checkout-amount"
+                placeholder="Amount in ₦"
+                min="100"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              />
+              <button
+                id="checkout-btn"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition"
+              >
+                Continue to Payment
+              </button>
+            </div>
+          </div>
+
+          <!-- Recurring Payment -->
+          <div class="bg-white rounded-lg p-6 border border-slate-200">
+            <h3 class="text-lg font-semibold mb-4">Monthly Contribution</h3>
+            <p class="text-slate-600 text-sm mb-4">Set up automatic monthly payments from your bank account.</p>
+            <button
+              id="recurring-setup-btn"
+              class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition"
+            >
+              Set Up Recurring
+            </button>
+          </div>
+        </section>
+
+        <!-- Recurring Payment Modal (hidden by default) -->
+        <div id="recurring-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
+            <h3 class="text-2xl font-bold mb-6">Monthly Contribution Setup</h3>
+
+            <div class="space-y-4">
+              <!-- Step 1: Select Bank -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Step 1: Select Your Bank</label>
+                <select
+                  id="mandate-bank-select"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                >
+                  <option value="">Loading banks…</option>
+                </select>
+              </div>
+
+              <!-- Step 2: Account Verification -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Step 2: Verify Your Account</label>
+                <div class="flex gap-2">
+                  <input
+                    type="text"
+                    id="mandate-account-number"
+                    placeholder="10-digit account number"
+                    maxlength="10"
+                    class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                  <button
+                    id="mandate-verify-btn"
+                    class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition"
+                  >
+                    Verify
+                  </button>
+                </div>
+                <p id="mandate-resolved-name" class="mt-2 text-sm font-semibold text-green-600 hidden"></p>
+              </div>
+
+              <!-- Step 3: Monthly Amount -->
+              <div>
+                <label class="block text-sm font-medium mb-2">Step 3: Monthly Contribution Amount</label>
+                <input
+                  type="number"
+                  id="mandate-amount"
+                  placeholder="e.g., 5000"
+                  min="1"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-3 pt-4">
+                <button
+                  id="modal-cancel-btn"
+                  class="flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="mandate-create-btn"
+                  disabled
+                  class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold rounded-lg transition"
+                >
+                  Set Up Monthly Plan
+                </button>
+              </div>
+
+              <!-- Post-create actions (hidden until mandate created) -->
+              <div id="mandate-post-create" class="hidden space-y-3 pt-4 border-t border-slate-200">
+                <button
+                  id="mandate-status-btn"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition"
+                >
+                  Check Status
+                </button>
+                <p id="mandate-status-result" class="text-sm text-slate-600"></p>
+                <button
+                  id="mandate-authorise-btn"
+                  class="w-full px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition"
+                >
+                  Authorize & Activate
+                </button>
+                <p id="mandate-authorise-result" class="text-sm text-slate-600"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Log -->
+        <section class="bg-white rounded-lg p-6 border border-slate-200">
+          <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
+          <ul id="event-log" class="space-y-3 max-h-64 overflow-y-auto"></ul>
+        </section>
+      </main>
+    </div>
+
+    <!-- Admin Screen (hidden by default) -->
+    <div id="admin-screen" class="hidden min-h-screen">
+      <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <h1 class="text-2xl font-bold">PensionPal Admin</h1>
+          <button
+            id="admin-logout-btn"
+            class="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium transition"
+          >
+            Back
+          </button>
+        </div>
+      </header>
+
+      <main class="max-w-5xl mx-auto px-6 py-8">
+        <div class="space-y-6">
+          <h2 class="text-3xl font-bold">Manage Active Mandates</h2>
+
+          <!-- Admin Password Modal -->
+          <div id="admin-password-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full">
+              <h3 class="text-2xl font-bold mb-6">Admin Access</h3>
+              <input
+                type="password"
+                id="admin-password-input"
+                placeholder="Enter admin password"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none mb-4"
+              />
+              <button
+                id="admin-password-btn"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition"
+              >
+                Access Admin Panel
+              </button>
+              <p id="admin-error" class="text-red-600 text-sm mt-4 hidden"></p>
+            </div>
+          </div>
+
+          <!-- Mandates List -->
+          <div id="mandates-container" class="hidden space-y-4">
+            <div id="mandates-list" class="space-y-4"></div>
+          </div>
+
+          <div id="no-mandates" class="text-center text-slate-600 py-12">
+            <p>No active mandates found</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="fixed bottom-4 right-4 max-w-sm px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-900 shadow-lg hidden transition"
+    ></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

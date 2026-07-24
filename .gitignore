@@ -1,0 +1,5 @@
+node_modules/
+.env
+src/db/db.json
+.DS_Store
+REFACTORING_NOTES.md

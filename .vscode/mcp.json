@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "monnify": {
+      "command": "npx",
+      "args": ["-y", "@monnify/mcp-server"],
+      "env": {
+        "MONNIFY_API_KEY": "${env:MONNIFY_API_KEY}",
+        "MONNIFY_SECRET_KEY": "${env:MONNIFY_SECRET_KEY}",
+        "MONNIFY_BASE_URL": "https://sandbox.monnify.com"
+      }
+    }
+  }
+}
