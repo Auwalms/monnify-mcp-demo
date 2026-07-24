@@ -111,7 +111,40 @@ function render() {
     document.getElementById('wallet-status').textContent = `Monthly: ₦${formatMoney(user.directDebit.mandate.amount)}`;
   }
 
+  renderMandateCard(user.directDebit.mandate, user.directDebit.payer);
   renderEvents(user.events || []);
+}
+
+function renderMandateCard(mandate, payer) {
+  const noneEl = document.getElementById('mandate-none');
+  const existingEl = document.getElementById('mandate-existing');
+
+  if (!mandate) {
+    noneEl.classList.remove('hidden');
+    existingEl.classList.add('hidden');
+    return;
+  }
+
+  noneEl.classList.add('hidden');
+  existingEl.classList.remove('hidden');
+
+  appState.mandateId = mandate.mandateCode;
+
+  document.getElementById('mandate-existing-amount').textContent = formatMoney(mandate.amount);
+  document.getElementById('mandate-existing-bank').textContent = payer
+    ? `${payer.accountName} · ${maskLast4(payer.accountNumber)}`
+    : '—';
+
+  const badge = document.getElementById('mandate-badge');
+  const pendingActions = document.getElementById('mandate-pending-actions');
+  const isActive = mandate.status === 'ACTIVE';
+
+  badge.textContent = isActive ? 'Active' : mandate.status.replace(/_/g, ' ');
+  badge.className = `px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+    isActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+  }`;
+
+  pendingActions.classList.toggle('hidden', isActive);
 }
 
 function renderEvents(events) {
@@ -306,6 +339,7 @@ async function setupMandateFlow() {
       appState.mandateId = result.mandateId;
       showToast('Mandate created — proceed to authorization');
       postCreateSection.classList.remove('hidden');
+      await refresh();
     } catch (err) {
       showToast(err.message, true);
     } finally {
@@ -338,6 +372,38 @@ async function setupMandateFlow() {
         resetMandateForm();
         refresh();
       }, 1000);
+    } catch (err) {
+      showToast(err.message, true);
+    } finally {
+      authoriseBtn.disabled = false;
+    }
+  });
+}
+
+function setupDashboardMandateActions() {
+  const statusBtn = document.getElementById('dashboard-mandate-status-btn');
+  const authoriseBtn = document.getElementById('dashboard-mandate-authorise-btn');
+
+  statusBtn.addEventListener('click', async () => {
+    if (!appState.mandateId) return;
+    try {
+      statusBtn.disabled = true;
+      const result = await api(`/api/wallet/mandate/${appState.mandateId}/status`);
+      showToast(result.message || 'Status retrieved.');
+    } catch (err) {
+      showToast(err.message, true);
+    } finally {
+      statusBtn.disabled = false;
+    }
+  });
+
+  authoriseBtn.addEventListener('click', async () => {
+    if (!appState.mandateId) return;
+    try {
+      authoriseBtn.disabled = true;
+      const result = await api(`/api/wallet/mandate/${appState.mandateId}/authorise`, { method: 'POST' });
+      showToast(result.message || 'Mandate authorized!');
+      await refresh();
     } catch (err) {
       showToast(err.message, true);
     } finally {
@@ -507,6 +573,7 @@ function setupAdminAccess() {
     setupCheckout();
     setupRecurringModal();
     setupMandateFlow();
+    setupDashboardMandateActions();
     await refresh();
     setInterval(refresh, POLL_INTERVAL_MS);
   } else {
@@ -529,6 +596,7 @@ function setupAdminAccess() {
       setupCheckout();
       setupRecurringModal();
       setupMandateFlow();
+      setupDashboardMandateActions();
       setInterval(refresh, POLL_INTERVAL_MS);
     } catch (err) {
       // Error is shown by handleLogin

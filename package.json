@@ -2,12 +2,12 @@
   "name": "pensionpal",
   "version": "1.0.0",
   "private": true,
-  "description": "PensionPal — a minimal NGN/USD pension savings demo app built for the Monnify MCP workshop.",
+  "description": "PensionPal \u2014 a minimal NGN/USD pension savings demo app built for the Monnify MCP workshop.",
   "type": "module",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "start": "node api.js && node src/app.js",
+    "dev": "node api.js && nodemon src/app.js"
   },
   "engines": {
     "node": ">=18"

@@ -3,3 +3,6 @@ node_modules/
 src/db/db.json
 .DS_Store
 REFACTORING_NOTES.md
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
