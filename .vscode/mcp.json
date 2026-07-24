@@ -2,10 +2,23 @@
   "servers": {
     "monnify": {
       "command": "npx",
-      "args": ["-y", "@monnify/mcp-server"],
+      "args": [
+        "-y",
+        "@monnify/mcp-server",
+        "--apiKey",
+        "${env:MONNIFY_API_KEY}",
+        "--secretKey",
+        "${env:MONNIFY_SECRET_KEY}",
+        "--contractCode",
+        "${env:MONNIFY_CONTRACT_CODE}",
+        "--env",
+        "sandbox",
+        "--transport",
+        "stdio",
+        "--format",
+        "json"
+      ],
       "env": {
-        "MONNIFY_API_KEY": "${env:MONNIFY_API_KEY}",
-        "MONNIFY_SECRET_KEY": "${env:MONNIFY_SECRET_KEY}",
         "MONNIFY_BASE_URL": "https://sandbox.monnify.com"
       }
     }
